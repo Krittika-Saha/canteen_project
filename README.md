@@ -1,4 +1,4 @@
-# 🥪 School Canteen Digital Ordering & Token Management System
+# 🥪 School Canteen Digital Ordering & Token Management System ([Order From Canteen](https://order-from-canteen.streamlit.app/))
 
 A secure, modular, web-based canteen ordering and token management system built using **Python**, **Streamlit**, and **MySQL**. 
 
@@ -29,8 +29,8 @@ To prioritize simplicity, and ease of use evaluation, certain  choices were made
 
 ##  Tech Stack
 
-* **Frontend**: [Streamlit](https://streamlit.io/)
-* **Database**: [MySQL](https://www.mysql.com/) via `mysql-connector-python`
+* **Frontend**: [Streamlit](https://streamlit.io/) (Hosted on streamlit community cloud)
+* **Database**: [MySQL](https://www.mysql.com/) via `mysql-connector-python` (Hosted on Aiven)
 * **Data Manipulation**: [Pandas](https://pandas.pydata.org/)
 * **Security**: `Werkzeug` (Password Hashing)
 
