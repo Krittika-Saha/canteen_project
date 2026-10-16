@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
+import sys, os
 
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
-    from ..database import (
+    from database import (
         init_db,
         get_menu_items, 
         update_menu, 
