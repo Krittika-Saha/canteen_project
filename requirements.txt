@@ -3,3 +3,4 @@ pandas
 mysql-connector-python
 streamlit-cookies-manager
 werkzeug
+streamlit_autorefresh
