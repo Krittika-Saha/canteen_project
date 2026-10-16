@@ -46,7 +46,7 @@ def admin_main():
                 col1, col2, col3 = st.columns([2, 2, 2])
                 with col1:
                     st.write(f"**Order #{order_id}** - Student: {name} (ID: {stu_id})")
-                    st.write(f"Total: ₹{amount:.2f} | Placed at: {created_at}")
+                    st.write(f"Total: ₹{price*quantity:.2f} | Placed at: {created_at}")
                 with col2:
                     st.write(f"Status: **{status}**")
                 with col3:
