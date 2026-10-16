@@ -1,5 +1,6 @@
 import streamlit as st
 from werkzeug.security import check_password_hash
+from admin import admin_main
 
 try:
     from .database import get_db_connection, register_student, get_student_by_id, init_db
@@ -123,6 +124,10 @@ def main():
             from orders import main as order_main
         order_main()
 
+pg = st.navigation([
+    st.Page(main, title="Student Portal", icon="🥪"),
+    st.Page(admin_main, title="Admin Portal", icon="🛡️")
+])
 
 if __name__ == "__main__":
     main()

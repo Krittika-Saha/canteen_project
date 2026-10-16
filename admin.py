@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
-import sys, os
 
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
     from database import (
         init_db,
@@ -28,7 +25,7 @@ except ImportError:
         approve_recharge
     )
 
-def main():
+def admin_main():
     # Initialize tables if not already created
     try:
         init_db()
@@ -121,4 +118,4 @@ def main():
             st.success("Menu updated successfully!")
 
 if __name__ == "__main__":
-    main()
+    admin_main()
