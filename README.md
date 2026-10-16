@@ -48,7 +48,7 @@ Clone the repository using your terminal or download the ZIP folder directly fro
 * **Option B: Downloading as ZIP**
   Click the green **Code** button on the GitHub repository page and select **Download ZIP**, then extract it to your preferred folder.
 
-![Clone or Download Repo](path/to/your/screenshot.png)
+![Clone or Download Repo](assets/zip_download.png)
 
 ---
 
