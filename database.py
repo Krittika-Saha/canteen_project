@@ -1,13 +1,17 @@
 import mysql.connector
 import pandas as pd
 from werkzeug.security import generate_password_hash
+import streamlit as st
 
 def get_db_connection():
+    db_config = st.secrets["mysql"]
+    
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",  # Update with your MySQL password if configured
-        database="test",
+        host=db_config["host"],
+        user=db_config["user"],
+        password=db_config["password"],
+        database=db_config["database"],
+        port=int(db_config.get("port", 3306))
     )
 
 def init_db():
