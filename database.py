@@ -6,7 +6,7 @@ def get_db_connection():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="thenewdb12#$",  # Update with your MySQL password if configured
+        password="",  # Update with your MySQL password if configured
         database="test",
     )
 

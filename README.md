@@ -25,7 +25,7 @@ To prioritize simplicity, and ease of use evaluation, certain  choices were made
 * **Admin Endpoint Authentication:** 
   * *Implementation:* The admin panel (`admin.py`) relies on the secrecy of the endpoint to ward off potential misuse of admin controls. 
   * *Security Risk:* If an unauthorized user discovers the admin route file, admin auth could be bypassed without a dedicated credentials and role management table.
-  * *Production Fix:* Implement a dedicated `Admin` table with  password hashing, multi-factor authentication (MFA), and isolated role-based routing middleware.
+  * *Production Fix:* Implement a dedicated `Admin` table with password hashing, multi-factor authentication (MFA), and isolated role-based routing middleware.
 
 ##  Tech Stack
 
