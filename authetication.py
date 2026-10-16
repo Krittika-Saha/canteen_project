@@ -12,14 +12,28 @@ except ImportError:
 def main():
     st.title("School Canteen System")
 
-    #Initializing session state variables
+    # Initializing session state variables
     if "page" not in st.session_state:
         st.session_state["page"] = "login"
 
     if "student" not in st.session_state:
         st.session_state["student"] = None
 
-    #login page
+    # --- PERSISTENCE CHECK ON RELOAD VIA QUERY PARAMS ---
+    # Read directly from the URL query string on refresh
+    query_params = st.query_params
+    if st.session_state["student"] is None and "logged_in_id" in query_params:
+        try:
+            saved_id = int(query_params["logged_in_id"])
+            stu_data = get_student_by_id(saved_id)
+            if stu_data:
+                student = Student(stu_data[0], stu_data[1], stu_data[2], balance=stu_data[4])
+                st.session_state["student"] = student
+                st.session_state["page"] = "order"
+        except Exception:
+            st.query_params.clear()
+
+    # Login page
     if st.session_state["page"] == "login":
         st.subheader("Login")
         with st.form("Login Form"):
@@ -34,23 +48,26 @@ def main():
                 stu_data = get_student_by_id(sid)
                 if stu_data is None:
                     st.warning("Student ID not found. Please register.")
-                    
                 else:
                     checked = check_password_hash(stu_data[3], pwd)
                     if checked:
-                        student = Student(stu_data[0], stu_data[1], stu_data[2])
+                        student = Student(stu_data[0], stu_data[1], stu_data[2], balance=stu_data[4])
                         st.session_state["student"] = student
+                        
+                        # Save ID to URL query parameters so refresh keeps the session
+                        st.query_params["logged_in_id"] = str(student.student_id)
+                        
                         st.success("Login Successful")
                         st.session_state["page"] = "order"
                         st.rerun()
                     else:
                         st.error("Incorrect Password")
         if st.button("Go to registration page"):
-            st.session_state["NewStudentID"]=sid
+            st.session_state["NewStudentID"] = sid
             st.session_state["page"] = "register"
             st.rerun()
 
-    #Registration page
+    # Registration page
     if st.session_state["page"] == "register":
         st.subheader("Register")
         with st.form("Registration Form"):
@@ -74,17 +91,28 @@ def main():
             elif get_student_by_id(sid) is not None:
                 st.error("This Student ID is already registered.")
             else:
-                student = Student(sid, sname, sclass)
+                student = Student(sid, sname, sclass, balance=0.0)
                 success = register_student(student, pwd)
                 if success:
                     st.success("Student Registered Successfully")
                     st.session_state["student"] = student
+                    
+                    # Save ID to URL query parameters
+                    st.query_params["logged_in_id"] = str(student.student_id)
+                    
                     st.session_state["page"] = "order"
                     st.rerun()
 
-        
-    #Ordering page
+    # Ordering page
     if st.session_state["page"] == "order":
+        if st.sidebar.button("Logout"):
+            st.session_state["student"] = None
+            st.session_state["page"] = "login"
+            
+            # Clear query parameters on logout
+            st.query_params.clear()
+            st.rerun()
+
         try:
             from .orders import main as order_main
         except ImportError:
@@ -94,4 +122,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

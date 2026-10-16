@@ -1,17 +1,30 @@
 import streamlit as st
 import pandas as pd
+from streamlit_autorefresh import st_autorefresh
+
 try:
-    from .database import get_available_menu
+    from .database import (
+        get_available_menu, 
+        place_order, 
+        request_recharge, 
+        get_student_orders, 
+        get_student_by_id
+    )
 except ImportError:
-    from database import get_available_menu
+    from database import (
+        get_available_menu, 
+        place_order, 
+        request_recharge, 
+        get_student_orders, 
+        get_student_by_id
+    )
 
 def total_bill(order_items):
     for item in order_items:
-        item["Total"]= item["price"] * item["quantity"]
+        item["Total"] = item["price"] * item["quantity"]
     return sum(item["Total"] for item in order_items)
- 
+
 def main():
-    st.title("Canteen Ordering System")
     student = st.session_state.get("student")
 
     if student is None:
@@ -21,72 +34,85 @@ def main():
             st.rerun()
         return
 
-    st.subheader(f"Welcome, {student.name} from class {student.student_class}!")
+    # Sync latest balance from database
+    updated_stu = get_student_by_id(student.student_id)
+    if updated_stu:
+        student.balance = updated_stu[4]
 
-    menu = get_available_menu()
-    if not menu:
-        st.warning("No menu items available at the moment.")
-        return
+    st.title(f"Welcome, {student.name}!")
+    st.info(f"Class: **{student.student_class}** | Digital Token Balance: **₹{student.balance:.2f}**")
 
-    st.subheader("Today's Menu")
+    tabs = st.tabs(["Place Order", "Recharge Balance", "Track Orders"])
 
-    with st.form("order_form"):
-        h1, h2, h3 = st.columns([1, 3, 1])
-        with h1:
-            st.write("Item Name")
-        with h2:
-            st.write("Price")
-        with h3:
-            st.write("Quantity")
+    # TAB 1: Place Order
+    with tabs[0]:
+        st.subheader("Today's Menu")
+        menu = get_available_menu()
+        if not menu:
+            st.warning("No menu items available at the moment.")
+        else:
+            with st.form("order_form"):
+                selected_items = []
+                for item in menu:
+                    item_id, item_name, item_price = item[0], item[1], item[2]
+                    col1, col2, col3 = st.columns([2, 1, 1])
+                    with col1:
+                        st.write(f"**{item_name}**")
+                    with col2:
+                        st.write(f"₹{item_price:.2f}")
+                    with col3:
+                        quantity = st.number_input(
+                            f"Qty", min_value=0, step=1, key=f"qty_{item_id}", label_visibility="collapsed"
+                        )
 
-        selected_items = []
-        for item in menu:
-            item_id = item[0]
-            item_name = item[1]
-            item_price = item[2]
+                    if quantity > 0:
+                        selected_items.append({
+                            "item_id": item_id,
+                            "item_name": item_name,
+                            "price": item_price,
+                            "quantity": quantity,
+                        })
 
-            col1, col2, col3 = st.columns([1, 3, 1])
-            with col1:
-                st.write(item_name)
-            with col2:
-                st.write(item_price)
-            with col3:
-                quantity = st.number_input(
-                    f"Quantity for {item_name}",
-                    min_value=0,
-                    step=1,
-                    key=f"qty_{item_id}",
-                    label_visibility="collapsed",
-                )
+                submitted = st.form_submit_button("Place Order")
 
-            if quantity > 0:
-                selected_items.append(
-                    {
-                        "item_id": item_id,
-                        "item_name": item_name,
-                        "price": item_price,
-                        "quantity": quantity,
-                    }
-                )
+            if submitted:
+                if not selected_items:
+                    st.warning("Please select at least one item.")
+                else:
+                    bill = total_bill(selected_items)
+                    if student.balance < bill:
+                        st.error(f"Insufficient token balance! Order total: ₹{bill:.2f}, Balance: ₹{student.balance:.2f}")
+                    else:
+                        success, result = place_order(student.student_id, bill)
+                        if success:
+                            st.success(f"Order placed successfully! Your Order ID is **#{result}**")
+                            st.rerun()
+                        else:
+                            st.error(result)
 
-        submitted = st.form_submit_button("Place Order")
+    # TAB 2: Cash Recharge Request
+    with tabs[1]:
+        st.subheader("Request Cash Recharge")
+        st.write("Deposit cash with the canteen staff, then submit a recharge request here to credit your account.")
+        with st.form("recharge_form"):
+            amount = st.number_input("Enter Amount Deposited (₹)", min_value=10, step=10)
+            req_submitted = st.form_submit_button("Submit Request")
 
-    if submitted:
-        if not selected_items:
-            st.warning("Please select at least one item with a quantity greater than zero.")
-            return
+        if req_submitted:
+            request_recharge(student.student_id, amount)
+            st.success(f"Recharge request for ₹{amount} submitted! Please pay cash to canteen staff for approval.")
 
-        bill = total_bill(selected_items)
-        st.session_state["confirmed_order"] = selected_items
-
-        st.subheader("Order Summary")
-        order_summ={
-            "Item Name": [item["item_name"] for item in selected_items],
-            "Price": [item["price"] for item in selected_items],
-            "Quantity": [item["quantity"] for item in selected_items],
-            "Total": [item["price"] * item["quantity"] for item in selected_items]
-        }
-        df= pd.DataFrame(order_summ)
-        st.dataframe(df, use_container_width=True)
-
-        st.success(f"Your order has been placed successfully. Total bill: {bill}")
+    # TAB 3: Track Orders
+    with tabs[2]:
+        st.subheader("Your Orders & Status")
+        
+        # Automatically refresh this page every 5000 milliseconds (5 seconds)
+        st_autorefresh(interval=2500, limit=None, key="order_status_refresh")
+        
+        orders = get_student_orders(student.student_id)
+        if orders:
+            df = pd.DataFrame(orders, columns=["Order ID", "Total Amount (₹)", "Status", "Placed At"])
+            st.dataframe(df, use_container_width=True)
+            st.caption("🔄 Status updates automatically in real-time.")
+        else:
+            st.info("No orders found.")
