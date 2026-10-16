@@ -129,3 +129,4 @@ pg = st.navigation([
     st.Page(admin_main, title="Admin Portal", icon="🛡️")
 ])
 
+pg.run()
