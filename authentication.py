@@ -129,5 +129,3 @@ pg = st.navigation([
     st.Page(admin_main, title="Admin Portal", icon="🛡️")
 ])
 
-if __name__ == "__main__":
-    main()
