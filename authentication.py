@@ -2,15 +2,19 @@ import streamlit as st
 from werkzeug.security import check_password_hash
 
 try:
-    from .database import get_db_connection, register_student, get_student_by_id
+    from .database import get_db_connection, register_student, get_student_by_id, init_db
     from .studentdetails import Student
 except ImportError:
-    from database import get_db_connection, register_student, get_student_by_id
+    from database import get_db_connection, register_student, get_student_by_id, init_db
     from studentdetails import Student
 
 
 def main():
     st.title("School Canteen System")
+    try:
+        init_db()
+    except Exception:
+            pass
 
     # Initializing session state variables
     if "page" not in st.session_state:

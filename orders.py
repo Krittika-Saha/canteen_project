@@ -83,12 +83,13 @@ def main():
                     if student.balance < bill:
                         st.error(f"Insufficient token balance! Order total: ₹{bill:.2f}, Balance: ₹{student.balance:.2f}")
                     else:
-                        success, result = place_order(student.student_id, bill)
+                        success = place_order(student.student_id, [i['price'] for i in selected_items], [i['quantity'] for i in selected_items])
+                        print(success)
                         if success:
-                            st.success(f"Order placed successfully! Your Order ID is **#{result}**")
+                            st.success(f"Order placed successfully!")
                             st.rerun()
                         else:
-                            st.error(result)
+                            st.error("Error placing order")
 
     # TAB 2: Cash Recharge Request
     with tabs[1]:
@@ -111,7 +112,7 @@ def main():
         
         orders = get_student_orders(student.student_id)
         if orders:
-            df = pd.DataFrame(orders, columns=["Order ID", "Total Amount (₹)", "Status", "Placed At"])
+            df = pd.DataFrame(orders, columns=["Order ID", "Price (₹)", "Quantity", "Status", "Placed At"])
             st.dataframe(df, use_container_width=True)
             st.caption("🔄 Status updates automatically in real-time.")
         else:

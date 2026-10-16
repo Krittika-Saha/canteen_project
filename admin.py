@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from streamlit_autorefresh import st_autorefresh
+
 
 try:
     from .database import (
@@ -67,6 +69,7 @@ def main():
     with tab2:
         st.subheader("Pending Cash Recharges")
         recharges = get_pending_recharges()
+        st_autorefresh(interval=2500, limit=None, key="order_status_refresh")
         if recharges:
             for req in recharges:
                 req_id, stu_id, name, amount = req

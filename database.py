@@ -39,11 +39,14 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS Orders (
             order_id INT AUTO_INCREMENT PRIMARY KEY,
+            item_id INT,
             stu_id INT,
-            total_amount DECIMAL(10, 2),
+            price DECIMAL(10, 2),
+            quantity SMALLINT,
             status VARCHAR(50) DEFAULT 'Placed',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (stu_id) REFERENCES Student(stu_id)
+            FOREIGN KEY (stu_id) REFERENCES Student(stu_id),
+            FOREIGN KEY (item_id) REFERENCES Menu(item_id)
         )
     """)
 
@@ -125,7 +128,8 @@ def get_available_menu():
 
 # --- Token & Order Handling Functions ---
 
-def place_order(stu_id, total_amount):
+def place_order(stu_id, price, quantity):
+    total_amount = sum([i*j for i,j in zip(price,quantity)])
     mydb = get_db_connection()
     mycursor = mydb.cursor()
     
@@ -140,13 +144,13 @@ def place_order(stu_id, total_amount):
     # Deduct balance and insert order
     new_balance = res[0] - total_amount
     mycursor.execute("UPDATE Student SET balance = %s WHERE stu_id = %s", (new_balance, stu_id))
-    mycursor.execute("INSERT INTO Orders (stu_id, total_amount, status) VALUES (%s, %s, 'Placed')", (stu_id, total_amount))
-    order_id = mycursor.lastrowid
+    for i,j in zip(price,quantity):
+        mycursor.execute("INSERT INTO Orders (stu_id, price, quantity, status) VALUES (%s, %s, %s, 'Placed')", (stu_id, i, j))
     
     mydb.commit()
     mycursor.close()
     mydb.close()
-    return True, order_id
+    return True
 
 def request_recharge(stu_id, amount):
     mydb = get_db_connection()
@@ -160,7 +164,7 @@ def request_recharge(stu_id, amount):
 def get_student_orders(stu_id):
     mydb = get_db_connection()
     mycursor = mydb.cursor()
-    query = "SELECT order_id, total_amount, status, created_at FROM Orders WHERE stu_id = %s ORDER BY created_at DESC"
+    query = "SELECT order_id, price, quantity, status, created_at FROM Orders WHERE stu_id = %s ORDER BY created_at DESC"
     mycursor.execute(query, (stu_id,))
     orders = mycursor.fetchall()
     mycursor.close()
@@ -170,7 +174,7 @@ def get_student_orders(stu_id):
 def get_all_orders():
     mydb = get_db_connection()
     mycursor = mydb.cursor()
-    query = "SELECT o.order_id, o.stu_id, s.stu_name, o.total_amount, o.status, o.created_at FROM Orders o JOIN Student s ON o.stu_id = s.stu_id ORDER BY o.created_at DESC"
+    query = "SELECT o.order_id, o.stu_id, s.stu_name, o.price, o.quantity, o.status, o.created_at FROM Orders o JOIN Student s ON o.stu_id = s.stu_id ORDER BY o.created_at DESC"
     mycursor.execute(query)
     orders = mycursor.fetchall()
     mycursor.close()
