@@ -13,6 +13,19 @@ Designed  for school environments with no-phone/no-online-payment policies, allo
 * **Ordering and Tracking**: Cart-selection system supporting item quantities and order statuses (`Placed` $\rightarrow$ `Preparing` $\rightarrow$ `Ready` $\rightarrow$ `Collected`), and live auto-refreshing tracking.
 * **Admin Panel**: Interface for canteen staff to manage incoming orders, approve cash recharges, and control menu list and inventory.
 
+## Security Considerations & Known Trade-offs
+
+To prioritize simplicity, and ease of use evaluation, certain  choices were made that involve intentional security trade-offs. These would have to be addressed in a full production environment:
+
+* **URL Query Parameters for Session State:** 
+  * *Implementation:* The application tracks active student login sessions using URL query parameters (e.g., `?logged_in_id=...`) to ensure persistence across page refreshes.
+  * *Security Risk:* This makes sessions vulnerable to shoulder surfing, browser history caching, and accidental link sharing. 
+  * *Production Fix:* Replace URL parameters with secure, HTTP-only, encrypted session cookies or token-based authentication.
+
+* **Admin Endpoint Authentication:** 
+  * *Implementation:* The admin panel (`admin.py`) relies on the secrecy of the endpoint to ward off potential misuse of admin controls. 
+  * *Security Risk:* If an unauthorized user discovers the admin route file, admin auth could be bypassed without a dedicated credentials and role management table.
+  * *Production Fix:* Implement a dedicated `Admin` table with  password hashing, multi-factor authentication (MFA), and isolated role-based routing middleware.
 
 ##  Tech Stack
 
