@@ -4,7 +4,7 @@ from streamlit_autorefresh import st_autorefresh
 
 
 try:
-    from .database import (
+    from ..database import (
         init_db,
         get_menu_items, 
         update_menu, 
