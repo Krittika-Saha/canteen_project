@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from streamlit_autorefresh import st_autorefresh
 
 try:
     from database import (
@@ -67,21 +66,23 @@ def admin_main():
     # TAB 2: Approve Cash Recharges
     with tab2:
         st.subheader("Pending Cash Recharges")
-        recharges = get_pending_recharges()
-        st_autorefresh(interval=2500, limit=None, key="order_status_refresh")
-        if recharges:
-            for req in recharges:
-                req_id, stu_id, name, amount = req
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"**Request #{req_id}**: {name} (ID: {stu_id}) deposited **₹{amount:.2f}**")
-                with col2:
-                    if st.button("Approve Cash", key=f"app_{req_id}"):
-                        approve_recharge(req_id)
-                        st.success(f"Approved ₹{amount:.2f} for Student {name}")
-                        st.rerun()
-        else:
-            st.info("No pending recharge requests.")
+        @st.fragment(run_every=2)
+        def recharge():
+            recharges = get_pending_recharges()
+            
+            if recharges:
+                for req in recharges:
+                    req_id, stu_id, name, amount = req
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.write(f"**Request #{req_id}**: {name} (ID: {stu_id}) deposited **₹{amount:.2f}**")
+                    with col2:
+                        if st.button("Approve Cash", key=f"app_{req_id}"):
+                            approve_recharge(req_id)
+                            st.success(f"Approved ₹{amount:.2f} for Student {name}")
+                            st.rerun()
+            else:
+                st.info("No pending recharge requests.")
 
     # TAB 3: Manage Menu & Add New Items
     with tab3:

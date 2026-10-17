@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from streamlit_autorefresh import st_autorefresh
 
 try:
     from .database import (
@@ -108,12 +107,12 @@ def main():
         st.subheader("Your Orders & Status")
         
         # Automatically refresh this page every 5000 milliseconds (5 seconds)
-        st_autorefresh(interval=2500, limit=None, key="order_status_refresh")
-        
-        orders = get_student_orders(student.student_id)
-        if orders:
-            df = pd.DataFrame(orders, columns=["Order ID", "Price (₹)", "Quantity", "Status", "Placed At"])
-            st.dataframe(df, use_container_width=True)
-            st.caption("🔄 Status updates automatically in real-time.")
-        else:
-            st.info("No orders found.")
+        @st.fragment(run_every=2)
+        def find_orders():
+            orders = get_student_orders(student.student_id)
+            if orders:
+                df = pd.DataFrame(orders, columns=["Order ID", "Price (₹)", "Quantity", "Status", "Placed At"])
+                st.dataframe(df, use_container_width=True)
+                st.caption("🔄 Status updates automatically in real-time.")
+            else:
+                st.info("No orders found.")
