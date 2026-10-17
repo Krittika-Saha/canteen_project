@@ -107,7 +107,7 @@ def main():
         st.subheader("Your Orders & Status")
         
         # Automatically refresh this page every 5000 milliseconds (5 seconds)
-        @st.fragment(run_every=2)
+        @st.fragment(run_every=5)
         def find_orders():
             orders = get_student_orders(student.student_id)
             if orders:

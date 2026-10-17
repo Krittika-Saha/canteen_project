@@ -66,7 +66,7 @@ def admin_main():
     # TAB 2: Approve Cash Recharges
     with tab2:
         st.subheader("Pending Cash Recharges")
-        @st.fragment(run_every=2)
+        @st.fragment(run_every=5)
         def recharge():
             recharges = get_pending_recharges()
             
