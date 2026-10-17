@@ -116,3 +116,4 @@ def main():
                 st.caption("🔄 Status updates automatically in real-time.")
             else:
                 st.info("No orders found.")
+    find_orders()

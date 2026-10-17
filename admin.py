@@ -83,6 +83,7 @@ def admin_main():
                             st.rerun()
             else:
                 st.info("No pending recharge requests.")
+        recharge()
 
     # TAB 3: Manage Menu & Add New Items
     with tab3:
