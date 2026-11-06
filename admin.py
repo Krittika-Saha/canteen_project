@@ -10,8 +10,7 @@ try:
         get_all_orders, 
         update_order_status, 
         get_pending_recharges, 
-        approve_recharge,
-        delete_student,
+        approve_recharge
     )
 except ImportError:
     from database import (
