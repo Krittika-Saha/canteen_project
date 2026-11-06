@@ -7,7 +7,6 @@ def get_db_connection():
     db_config = st.secrets["mysql"]
     
     return mysql.connector.connect(
-        host=db_config["host"],
         user=db_config["user"],
         password=db_config["password"],
         database=db_config["database"],
@@ -49,8 +48,9 @@ def init_db():
             quantity SMALLINT,
             status VARCHAR(50) DEFAULT 'Placed',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (stu_id) REFERENCES Student(stu_id),
-            FOREIGN KEY (item_id) REFERENCES Menu(item_id)
+            FOREIGN KEY (stu_id) REFERENCES Student(stu_id) ON DELETE CASCADE,
+            FOREIGN KEY (item_id) REFERENCES Menu(item_id) ON DELETE CASCADE
+
         )
     """)
 
@@ -62,7 +62,8 @@ def init_db():
             amount DECIMAL(10, 2),
             status VARCHAR(50) DEFAULT 'Pending',
             requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (stu_id) REFERENCES Student(stu_id)
+            FOREIGN KEY (stu_id) REFERENCES Student(stu_id) ON DELETE CASCADE
+
         )
     """)
 
@@ -228,3 +229,19 @@ def add_menu_item(item_name, price, available):
     mycursor.close()
     mydb.close()
     return True
+
+def delete_student(student_id):
+    """Deletes a student record from the database by ID."""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    try:
+        # Execute delete query (adjust table name if it's 'students' or 'Auth')
+        cursor.execute("DELETE FROM Student WHERE stu_id = %s", (student_id,))
+        connection.commit()
+        return cursor.rowcount >  0  # Returns True if a row was actually deleted
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        return False
+    finally:
+        cursor.close()
+        connection.close()

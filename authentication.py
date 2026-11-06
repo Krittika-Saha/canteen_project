@@ -3,19 +3,18 @@ from werkzeug.security import check_password_hash
 from admin import admin_main
 
 try:
-    from .database import get_db_connection, register_student, get_student_by_id, init_db
+    from .database import get_db_connection, register_student, get_student_by_id, init_db, delete_student
     from .studentdetails import Student
 except ImportError:
-    from database import get_db_connection, register_student, get_student_by_id, init_db
+    from database import get_db_connection, register_student, get_student_by_id, init_db, delete_student
     from studentdetails import Student
 
 
 def main():
     st.title("School Canteen System")
-    try:
-        init_db()
-    except Exception:
-            pass
+
+    init_db()
+    
 
     # Initializing session state variables
     if "page" not in st.session_state:
@@ -25,7 +24,6 @@ def main():
         st.session_state["student"] = None
 
     # --- PERSISTENCE CHECK ON RELOAD VIA QUERY PARAMS ---
-    # Read directly from the URL query string on refresh
     query_params = st.query_params
     if st.session_state["student"] is None and "logged_in_id" in query_params:
         try:
@@ -59,7 +57,6 @@ def main():
                         student = Student(stu_data[0], stu_data[1], stu_data[2], balance=stu_data[4])
                         st.session_state["student"] = student
                         
-                        # Save ID to URL query parameters so refresh keeps the session
                         st.query_params["logged_in_id"] = str(student.student_id)
                         
                         st.success("Login Successful")
@@ -102,7 +99,6 @@ def main():
                     st.success("Student Registered Successfully")
                     st.session_state["student"] = student
                     
-                    # Save ID to URL query parameters
                     st.query_params["logged_in_id"] = str(student.student_id)
                     
                     st.session_state["page"] = "order"
@@ -113,10 +109,30 @@ def main():
         if st.sidebar.button("Logout"):
             st.session_state["student"] = None
             st.session_state["page"] = "login"
-            
-            # Clear query parameters on logout
             st.query_params.clear()
             st.rerun()
+
+        # --- USER ACCOUNT DELETION FEATURE ---
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("Danger Zone")
+        
+        # Use an expander or a confirmation checkbox to avoid accidental clicks
+        with st.sidebar.expander("Delete My Account"):
+            confirm_delete = st.checkbox("I want to permanently delete my account")
+            if st.button("Confirm Deletion", type="primary"):
+                if confirm_delete and st.session_state["student"]:
+                    current_id = st.session_state["student"].student_id
+                    success = delete_student(current_id)
+                    if success:
+                        st.session_state["student"] = None
+                        st.session_state["page"] = "login"
+                        st.query_params.clear()
+                        st.success("Your account has been successfully deleted.")
+                        st.rerun()
+                    else:
+                        st.error("Failed to delete account. Please try again.")
+                else:
+                    st.warning("Please check the confirmation box first.")
 
         try:
             from .orders import main as order_main

@@ -10,7 +10,8 @@ try:
         get_all_orders, 
         update_order_status, 
         get_pending_recharges, 
-        approve_recharge
+        approve_recharge,
+        delete_student,
     )
 except ImportError:
     from database import (
@@ -26,10 +27,7 @@ except ImportError:
 
 def admin_main():
     # Initialize tables if not already created
-    try:
-        init_db()
-    except Exception:
-        pass
+    init_db()
 
     st.title("Canteen Admin Panel")
 
