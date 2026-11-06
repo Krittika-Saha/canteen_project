@@ -13,7 +13,10 @@ except ImportError:
 def main():
     st.title("School Canteen System")
 
-    init_db()
+    try:
+        init_db()
+    except Exception:
+        pass
     
 
     # Initializing session state variables

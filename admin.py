@@ -26,7 +26,10 @@ except ImportError:
 
 def admin_main():
     # Initialize tables if not already created
-    init_db()
+    try:
+        init_db()
+    except Exception:
+        pass
 
     st.title("Canteen Admin Panel")
 
